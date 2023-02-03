@@ -4,6 +4,7 @@ import static java.lang.Math.log10;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 
@@ -51,9 +53,11 @@ public class MainActivity extends AppCompatActivity {
     private void onRecord(boolean start) {
         if (start) {
             isRecording=true;
-            startRecording();
+            startService();
+//            startRecording();
         } else {
-            stopRecording();
+            stopService();
+//            stopRecording();
             isRecording=false;
         }
     }
@@ -86,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).start();
-
 
         try {
             recorder.prepare();
@@ -149,7 +152,18 @@ public class MainActivity extends AppCompatActivity {
                         0));
 
 
+
         setContentView(ll);
+    }
+
+    public void startService() {
+        Intent serviceIntent = new Intent(this, ForegroundService.class);
+        serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android");
+        ContextCompat.startForegroundService(this, serviceIntent);
+    }
+    public void stopService() {
+        Intent serviceIntent = new Intent(this, ForegroundService.class);
+        stopService(serviceIntent);
     }
 
     @Override

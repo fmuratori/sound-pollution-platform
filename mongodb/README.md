@@ -20,7 +20,7 @@ Telemetries
     _id: string,
     gps_lat: float,
     gps_lng: float,
-    meter_name: string,
+    device_name: string,
     last_timestamp: datetime,
     active_since: datetime,
     data: [

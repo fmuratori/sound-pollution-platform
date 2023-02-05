@@ -23,6 +23,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.IOException;
+import java.time.Instant;
 
 public class ForegroundService extends Service {
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
@@ -76,8 +77,11 @@ public class ForegroundService extends Service {
                 int decibel = (int) Math.round(20 * log10(amplitude));
 
                 System.out.println(decibel);
+
+                String fullMessage = "android_meter_002" + " 43.914376 12.611327\t" + "[(" + (System.currentTimeMillis() / 1000) + ", " + decibel + ")]";
+
                 MqttMessage message = new MqttMessage();
-                message.setPayload(String.valueOf(decibel).getBytes());
+                message.setPayload(fullMessage.getBytes());
                 message.setQos(1);
                 message.setRetained(false);
                 if (mqttClient.isConnected())

@@ -1,0 +1,4 @@
+dnspython==2.3.0
+paho-mqtt==1.6.1
+pyserial==3.5
+python-dotenv==0.21.1

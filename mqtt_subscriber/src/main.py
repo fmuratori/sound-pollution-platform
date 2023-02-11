@@ -1,4 +1,4 @@
-from datetime import datetime 
+from datetime import datetime, timezone 
 import paho.mqtt.client as mqtt
 import pymongo
 from bson.objectid import ObjectId
@@ -37,26 +37,26 @@ def on_message(client, userdata, msg):
             "gps_lng": float(gps_lng),
             "data": [
                 {
-                    "datetime": datetime.fromtimestamp(int(item[0])).isoformat(),
+                    "datetime": datetime.fromisoformat(item[0]),
                     "value": int(item[1])
                 } for item in msg_data
             ],
-            "last_timestamp": datetime.now().isoformat(),
-            "active_since": datetime.now().isoformat()
+            "last_update": datetime.now(timezone.utc),
+            "active_since": datetime.now(timezone.utc)
         })
     else:
         logging.info("Updating existing document...")
         db.meters.update_one(
             {"device_name" : name}, { 
                 "$set": {
-                    "last_update": datetime.now().isoformat()
+                    "last_update": datetime.now(timezone.utc)
                 },
                 "$push" : { 
                     "data" : { 
                         "$each" : [
                             {
                                 "value": int(item[1]), 
-                                "timestamp" : datetime.fromtimestamp(int(item[0])).isoformat(),
+                                "datetime" : datetime.fromisoformat(item[0]),
                             } for item in msg_data
                         ]
                     } 

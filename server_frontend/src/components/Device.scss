@@ -1,0 +1,30 @@
+@import '../App.scss';
+
+.my-clickable {
+    cursor: pointer;
+}
+
+.my-stop-state {
+    background-color: $stop-color;
+    border: none !important;
+}
+.my-malfunction-state {
+    background-color: $malfunction-color;
+    border: none !important;
+}
+.my-urgent_maintenance-state {
+    background-color: $urgent-maintenance-color;
+    border: none !important;
+}
+.my-recommended_maintenance-state {
+    background-color: $recommended-maintenance-color;
+    border: none !important;
+}
+.my-regular-state {
+    background-color: $regular-color;
+    border: none !important;
+}
+
+.my-selected {  
+    box-shadow: 0 0 20px #333;
+}

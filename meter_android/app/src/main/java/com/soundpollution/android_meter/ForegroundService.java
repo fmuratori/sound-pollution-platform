@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Pair;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -19,11 +20,15 @@ import androidx.core.app.NotificationCompat;
 import info.mqtt.android.service.Ack;
 import info.mqtt.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.IOException;
-import java.time.Instant;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
 
 public class ForegroundService extends Service {
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
@@ -72,22 +77,63 @@ public class ForegroundService extends Service {
         mqttClient.connect();
 
         new Thread(() -> {
+            final int PUBLISH_TIME = 10; // 10 secondi
+            final int UPDATE_TIME = 1;   // 1 secondo
+            final int CHECK_TIME = 100;      // 100 millisecondi
+
+            int aOldValue = 0;
+            int aValue = 0;
+            int aNewValue = 0;
+
+            int currTime = (int) (System.currentTimeMillis()  / 1000);
+            int oldPublishTime = currTime;
+            int oldUpdateTime = currTime;
+
+            List<Pair<String, Integer>> recorded = new ArrayList<>();
+
+            TimeZone tz = TimeZone.getTimeZone("UTC");
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            df.setTimeZone(tz);
+
             while (isRunning) {
-                int amplitude = recorder.getMaxAmplitude();
-                int decibel = (int) Math.round(20 * log10(amplitude));
+                currTime = (int) (System.currentTimeMillis()  / 1000);
 
-                System.out.println(decibel);
+                if (currTime - oldUpdateTime > UPDATE_TIME) {
+                    if (Math.abs(Math.round(20 * log10(aValue)) - Math.round(20 * log10(aOldValue))) > 2) {
+                        recorded.add(new Pair<>(
+                                df.format(new Date()) , (int) Math.round(20 * log10(aValue))));
+                        aOldValue = aValue;
+                        aValue = -1;
+                    }
+                    oldUpdateTime = currTime;
+                }
 
-                String fullMessage = "android_meter_002" + " 43.914376 12.611327\t" + "[(" + (System.currentTimeMillis() / 1000) + ", " + decibel + ")]";
+                if (currTime - oldPublishTime > PUBLISH_TIME) {
+                    String fullMessage = "android_meter_002" + " 43.914376 12.611327\t[";
+                    for (Pair<String,Integer> p : recorded)
+                        fullMessage += "(\"" + p.first + "\", " + p.second + "), ";
+                    fullMessage = fullMessage.substring(0, fullMessage.length() - 2);
+                    fullMessage += "]";
 
-                MqttMessage message = new MqttMessage();
-                message.setPayload(fullMessage.getBytes());
-                message.setQos(1);
-                message.setRetained(false);
-                if (mqttClient.isConnected())
-                    mqttClient.publish("sound_pollution", message, false, null);
+                    System.out.println(fullMessage);
+
+                    MqttMessage message = new MqttMessage();
+                    message.setPayload(fullMessage.getBytes());
+                    message.setQos(1);
+                    message.setRetained(false);
+                    if (mqttClient.isConnected())
+                        mqttClient.publish("sound_pollution", message, false, null);
+
+                    oldPublishTime = currTime;
+                    recorded.clear();
+                }
+
+                aNewValue = recorder.getMaxAmplitude();
+                if (aNewValue > aValue)
+                    aValue = aNewValue;
+
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(CHECK_TIME);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

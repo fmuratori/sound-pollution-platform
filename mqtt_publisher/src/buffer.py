@@ -1,8 +1,9 @@
 from threading import Condition
 from time import time
 import logging
+from datetime import datetime
 
-BUFFER_SIZE = 10
+BUFFER_SIZE = 100
 
 # TODO: valutare l'utilizzo di numpy
 
@@ -25,7 +26,7 @@ class BoundedBuffer:
     def put(self, value):
         # shift buffer to the left
         with self.lock:
-            curr_time = int(time())
+            curr_time = datetime.utcnow().isoformat()
             if self.is_full():
                 logging.info(f"[BUFFER] Buffer is full. Shifting values...")
                 self.buffer = self.buffer[1:] + [(curr_time, value)]

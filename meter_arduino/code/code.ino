@@ -1,5 +1,5 @@
-int UPDATE_TIME = 1000;
-int CHECK_TIME = 10;
+unsigned long UPDATE_TIME = 60000;
+unsigned long CHECK_TIME = 100;
 int LED_PIN = 7;
 
 int aSensorPin = A3; 
@@ -8,8 +8,8 @@ int aSensorValue = 0;
 int aValue = -1;
 int aOldValue = 0; 
 
-int timer = 0;
-int currTime = 0;
+unsigned long timer = 0;
+unsigned long currTime = 0;
 
 void setup () {
   Serial.begin (9600);

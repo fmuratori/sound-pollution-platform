@@ -42,7 +42,7 @@ function Device() {
       socket.off('device_data');
     };
 
-  })
+  }, [])
 
   function printTime(value) {
     return (<span>

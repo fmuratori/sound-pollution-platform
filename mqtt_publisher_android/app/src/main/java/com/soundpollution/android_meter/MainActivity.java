@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         if (!permissionToRecordAccepted ) finish();
-
     }
 
     class RecordButton extends androidx.appcompat.widget.AppCompatButton {
@@ -79,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         0));
+
+
 
         setContentView(ll);
     }

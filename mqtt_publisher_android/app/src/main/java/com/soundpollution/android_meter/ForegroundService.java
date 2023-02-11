@@ -19,6 +19,9 @@ import androidx.core.app.NotificationCompat;
 //import org.eclipse.paho.android.service.MqttAndroidClient;
 import info.mqtt.android.service.Ack;
 import info.mqtt.android.service.MqttAndroidClient;
+
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
@@ -36,7 +39,7 @@ public class ForegroundService extends Service {
     private MediaRecorder recorder = null;
     private static String fileName = null;
 
-    private MqttAndroidClient mqttClient = null;
+    private MqttPublisher mqttPublisher = null;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -71,61 +74,39 @@ public class ForegroundService extends Service {
         recorder.setOutputFile(fileName);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
-        String clientId = MqttClient.generateClientId();
-        mqttClient = new MqttAndroidClient(this.getApplicationContext(), "tcp://192.168.0.100:1883",clientId, Ack.AUTO_ACK);
-
-        mqttClient.connect();
+        mqttPublisher = new MqttPublisher(this.getApplicationContext());
+        mqttPublisher.start();
 
         new Thread(() -> {
-            final int PUBLISH_TIME = 10; // 10 secondi
-            final int UPDATE_TIME = 1;   // 1 secondo
-            final int CHECK_TIME = 100;      // 100 millisecondi
+            final int PUBLISH_TIME = 60; // 60 secondi
+            final int CHECK_TIME = 100;  // 100 millisecondi
 
-            int aOldValue = 0;
+            int oldDecibel = 0;
+            int newDecibel;
             int aValue = 0;
-            int aNewValue = 0;
+            int aNewValue;
 
             int currTime = (int) (System.currentTimeMillis()  / 1000);
             int oldPublishTime = currTime;
-            int oldUpdateTime = currTime;
-
-            List<Pair<String, Integer>> recorded = new ArrayList<>();
 
             TimeZone tz = TimeZone.getTimeZone("UTC");
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
             df.setTimeZone(tz);
 
             while (isRunning) {
-                currTime = (int) (System.currentTimeMillis()  / 1000);
-
-                if (currTime - oldUpdateTime > UPDATE_TIME) {
-                    if (Math.abs(Math.round(20 * log10(aValue)) - Math.round(20 * log10(aOldValue))) > 2) {
-                        recorded.add(new Pair<>(
-                                df.format(new Date()) , (int) Math.round(20 * log10(aValue))));
-                        aOldValue = aValue;
-                        aValue = -1;
-                    }
-                    oldUpdateTime = currTime;
-                }
+                currTime = (int) (System.currentTimeMillis() / 1000);
 
                 if (currTime - oldPublishTime > PUBLISH_TIME) {
-                    String fullMessage = "android_meter_002" + " 43.914376 12.611327\t[";
-                    for (Pair<String,Integer> p : recorded)
-                        fullMessage += "(\"" + p.first + "\", " + p.second + "), ";
-                    fullMessage = fullMessage.substring(0, fullMessage.length() - 2);
-                    fullMessage += "]";
 
-                    System.out.println(fullMessage);
-
-                    MqttMessage message = new MqttMessage();
-                    message.setPayload(fullMessage.getBytes());
-                    message.setQos(1);
-                    message.setRetained(false);
-                    if (mqttClient.isConnected())
-                        mqttClient.publish("sound_pollution", message, false, null);
-
+                    // check and add new measure to list
+                    newDecibel = (int) Math.round(20 * log10(aValue));
+                    if (Math.abs(newDecibel - oldDecibel) > 1) {
+                        System.out.println("[BUFFER] Adding element to buffer. Decibel: " + newDecibel);
+                        Buffer.instance().put(df.format(new Date()) , newDecibel);
+                        oldDecibel = newDecibel;
+                        aValue = -1;
+                    }
                     oldPublishTime = currTime;
-                    recorded.clear();
                 }
 
                 aNewValue = recorder.getMaxAmplitude();
@@ -155,7 +136,7 @@ public class ForegroundService extends Service {
         recorder.release();
         recorder = null;
 
-        mqttClient.disconnect(null, null);
+        mqttPublisher.terminate();
 
         isRunning = false;
         super.onDestroy();

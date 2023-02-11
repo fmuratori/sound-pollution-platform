@@ -36,7 +36,7 @@ function Devices() {
       socket.off('devices');
     };
 
-  })
+  }, [])
 
   function reloadDevices() {
     socket.emit('get_devices')

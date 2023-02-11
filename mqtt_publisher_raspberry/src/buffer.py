@@ -3,7 +3,7 @@ from time import time
 import logging
 from datetime import datetime
 
-BUFFER_SIZE = 100
+BUFFER_SIZE = 60*24
 
 # TODO: valutare l'utilizzo di numpy
 

@@ -4,9 +4,6 @@ from threading import Thread, Event
 
 import paho.mqtt.client as mqtt
 
-# TODO: gestire errori di rete
-# TODO: fixare callback connection non richiamata
-
 class MqttPublisherClient(Thread): 
     topic = None
     client = None
@@ -62,7 +59,7 @@ class MqttPublisherClient(Thread):
                         self.coord_lng + "\t" + \
                         str(self.buffer.flush_all())
 
-                    self.client.publish(self.topic, text)
+                    self.client.publish(self.topic, text, 2)
 
                     logging.info(f"[MQTT] Published data to the broker. Data: {text}")
                 else:

@@ -69,7 +69,6 @@ public class ForegroundService extends Service {
 
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        recorder.getMaxAmplitude();
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         recorder.setOutputFile(fileName);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
@@ -97,11 +96,10 @@ public class ForegroundService extends Service {
                 currTime = (int) (System.currentTimeMillis() / 1000);
 
                 if (currTime - oldPublishTime > PUBLISH_TIME) {
-
                     // check and add new measure to list
                     newDecibel = (int) Math.round(20 * log10(aValue));
                     if (Math.abs(newDecibel - oldDecibel) > 1) {
-                        System.out.println("[BUFFER] Adding element to buffer. Decibel: " + newDecibel);
+                        System.out.println("[METER] Adding element to buffer. Decibel: " + newDecibel);
                         Buffer.instance().put(df.format(new Date()) , newDecibel);
                         oldDecibel = newDecibel;
                         aValue = -1;
@@ -110,8 +108,10 @@ public class ForegroundService extends Service {
                 }
 
                 aNewValue = recorder.getMaxAmplitude();
-                if (aNewValue > aValue)
+                if (aNewValue > aValue) {
                     aValue = aNewValue;
+                }
+
 
                 try {
                     Thread.sleep(CHECK_TIME);

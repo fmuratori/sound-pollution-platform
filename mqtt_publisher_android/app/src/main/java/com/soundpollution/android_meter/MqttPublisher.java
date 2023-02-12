@@ -82,7 +82,7 @@ public class MqttPublisher extends Thread {
 
                 MqttMessage message = new MqttMessage();
                 message.setPayload(fullMessage.getBytes());
-                message.setQos(1);
+                message.setQos(2);
                 message.setRetained(false);
                 if (mqttClient.isConnected())
                     mqttClient.publish("sound_pollution", message, false, new IMqttActionListener() {

@@ -57,7 +57,7 @@ void loop () {
 
   /* 
    * Cattura il massimo livello di rumore registrato in un 
-   * intervallo di lunghezza UPDATE_TIME millisecondi 
+   * intervallo di durata UPDATE_TIME millisecondi 
    */
   aSensorValue = analogRead(aSensorPin);
   if (aSensorValue > aValue)

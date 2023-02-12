@@ -4,7 +4,7 @@ from threading import Thread
 
 import serial as ser
 
-MESSAGE_REGEX = "(ANALOG)\s\d+(\t(DIGITAL)\s\d+)?"
+MESSAGE_REGEX = "(ANALOG)\s\d+"
 
 class ChannelObserver(Thread):
     serial = None

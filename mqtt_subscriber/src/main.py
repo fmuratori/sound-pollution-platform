@@ -65,7 +65,7 @@ def on_message(client, userdata, msg):
         )
 
 
-client = mqtt.Client("test-sub-client")
+client = mqtt.Client("sound_pollution_subscriber")
 client.on_connect = on_connect
 client.on_message = on_message
 

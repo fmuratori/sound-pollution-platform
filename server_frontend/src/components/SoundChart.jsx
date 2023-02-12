@@ -33,8 +33,8 @@ function SoundChart(props) {
         }}
       >
         <CartesianGrid stroke="#5e5e5e" strokeDasharray="3 3" />
-        <XAxis padding={{ left: 30, right: 30 }} type="number" dataKey="xValue" name="Tempo" stroke="black" domain={["auto", "auto"]} tickFormatter={formatXAxis}/>
-        <YAxis padding={{ top: 30, bottom: 30 }} type="number" dataKey="decibel" name="Rumore" unit="db" stroke="black" domain={["auto", "auto"]} />
+        <XAxis padding={{ left: 30, right: 30 }} type="number" dataKey="xValue" name="Tempo" stroke="black" domain={["auto", 'dataMax']} tickFormatter={formatXAxis}/>
+        <YAxis padding={{ top: 30, bottom: 30 }} type="number" dataKey="decibel" name="Rumore" unit="db" stroke="black" domain={["auto", 'dataMax']} />
         <Scatter type="monotone" dataKey="decibel" stroke="blue"  fill="#0d6efd"  strokeWidth={3}  lineJointType='monotoneX' line />
       </ScatterChart>
     </ResponsiveContainer>

@@ -6,6 +6,7 @@ import android.util.Pair;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import info.mqtt.android.service.Ack;
@@ -31,7 +32,9 @@ public class MqttPublisher extends Thread {
     }
 
     public void connect() {
-        IMqttToken token = mqttClient.connect();
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setKeepAliveInterval(60*10);
+        IMqttToken token = mqttClient.connect(options);
         token.setActionCallback(new IMqttActionListener() {
             @Override
             public void onSuccess(IMqttToken asyncActionToken) {
@@ -67,38 +70,30 @@ public class MqttPublisher extends Thread {
 
     @Override
     public void run() {
-        mqttClient.connect();
+        this.connect();
 
         while(!stopRunning) {
-
-            if (!Buffer.instance().isEmpty()) {
-                String fullMessage = DEVICE_NAME + " " + GPS_LAT + " " + GPS_LNG + "\t[";
+            if (Buffer.instance().isEmpty()) {
+                System.out.println("[MQTT CLIENT] Empty buffer nothing published ");
+            } else if (!mqttClient.isConnected()) {
+                System.out.println("[MQTT CLIENT] MQTT Client is not connected ");
+                this.connect();
+            } else {
+                StringBuilder fullMessage = new StringBuilder(DEVICE_NAME + " " + GPS_LAT + " " + GPS_LNG + "\t[");
                 for (Pair<String,Integer> p : Buffer.instance().get())
-                    fullMessage += "(\"" + p.first + "\", " + p.second + "), ";
-                fullMessage = fullMessage.substring(0, fullMessage.length() - 2);
-                fullMessage += "]";
+                    fullMessage.append("(\"").append(p.first).append("\", ").append(p.second).append("), ");
+                fullMessage = new StringBuilder(fullMessage.substring(0, fullMessage.length() - 2));
+                fullMessage.append("]");
 
                 System.out.println("[MQTT CLIENT] Publishing data: " + fullMessage);
 
                 MqttMessage message = new MqttMessage();
-                message.setPayload(fullMessage.getBytes());
+                message.setPayload(fullMessage.toString().getBytes());
                 message.setQos(2);
-                message.setRetained(false);
-                if (mqttClient.isConnected())
-                    mqttClient.publish("sound_pollution", message, false, new IMqttActionListener() {
-                        @Override
-                        public void onSuccess(IMqttToken asyncActionToken) {
-                            System.out.println("[MQTT CLIENT] Published data with SUCCESS");
-                            Buffer.instance().clear();
-                        }
+                message.setRetained(true);
 
-                        @Override
-                        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                            System.out.println("[MQTT CLIENT] Data now published");
-                        }
-                    });
+                mqttClient.publish("sound_pollution", message, false, null);
             }
-
             try {
                 Thread.sleep(UPDATE_TIME);
             } catch (InterruptedException e) {

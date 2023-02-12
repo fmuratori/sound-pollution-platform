@@ -24,12 +24,10 @@ public class Buffer {
         buffer.add(new Pair<>(date, value));
     }
 
-    public synchronized void clear() {
-        buffer.clear();
-    }
-
     public synchronized List<Pair<String, Integer>> get() {
-        return new ArrayList<>(buffer);
+        List<Pair<String, Integer>> output = new ArrayList<>(buffer);
+        buffer.clear();
+        return output;
     }
 
     public synchronized boolean isFull() {

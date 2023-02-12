@@ -30,39 +30,30 @@ class MqttPublisherClient(Thread):
         # Create an MQTT client
         self.client = mqtt.Client(self.name)
 
-        # def on_connect(client, userdata, flags, code):
-        #     logging.info("ASD")
-        #     if code == 0:
-        #         logging.info("[MQTT] Connected to MQTT Broker")
-        #         self.is_connected = True
-        #         self.connectionEvent.set()
-        #     else:
-        #         logging.info(f"[MQTT] Failed to connect, return code {code}\n")
-
-        # self.client.on_connect = on_connect
-
     def connect(self):
         logging.info(f"[MQTT] Connecting to the broker ...")
-        self.client.connect(self.broker_ip, self.broker_port)
+        self.client.connect(self.broker_ip, self.broker_port, keepalive=600)
         
     def disconnect(self):
+        logging.info(f"[MQTT] Disconnecting from the broker ...")
         self.client.disconnect()
 
     def run(self): 
-        self.connect()       
-
+        self.connect()      
         while True:
-            try:
-                if not self.buffer.is_empty():
-                    text = self.name + " " + \
-                        self.coord_lat + " " + \
-                        self.coord_lng + "\t" + \
-                        str(self.buffer.flush_all())
+            if self.buffer.is_empty():
+                logging.info(f"[MQTT] Empty buffer, published nothing to the broker.")
+            # elif not self.client.is_connected():
+            #     logging.info(f"[MQTT] Client disconnected, can't publish data.")
+            #     self.connect()
+            else:
+                text = self.name + " " + \
+                    self.coord_lat + " " + \
+                    self.coord_lng + "\t" + \
+                    str(self.buffer.flush_all())
 
-                    self.client.publish(self.topic, text, 2)
+                self.client.publish(self.topic, text, 2)
 
-                    logging.info(f"[MQTT] Published data to the broker. Data: {text}")
-                else:
-                    logging.info(f"[MQTT] Empty buffer, published nothing to the broker.")
-            finally:
-                sleep(self.update_delta)
+                logging.info(f"[MQTT] Published data to the broker. Data: {text}")
+
+            sleep(self.update_delta)

@@ -7,6 +7,7 @@ int aSensorValue = 0;
 
 int aValue = -1;
 int aOldValue = 0; 
+int decibel = 40;
 
 unsigned long timer = 0;
 unsigned long currTime = 0;
@@ -33,21 +34,22 @@ void loop () {
        * la prima misurazione registrata
        */
       if (aOldValue != 0) {
-        /* 
-        * Invio dei livelli di rumore in seriale
-        */
-        int decibel = deltaValueToDecibel(aOldValue, aValue);
-        Serial.print("ANALOG ");
-        Serial.println(decibel);
-
-        /*
-        * Impostazione led di allarme rumore elevato
-        */
-        if (decibel >= 75)
-          digitalWrite(LED_PIN, HIGH);   
-        else 
-          digitalWrite(LED_PIN, LOW);
+        decibel = deltaValueToDecibel(aOldValue, aValue);
       }
+
+      /* 
+      * Invio dei livelli di rumore in seriale
+      */
+      Serial.print("ANALOG ");
+      Serial.println(decibel);
+
+      /*
+      * Impostazione led di allarme rumore elevato
+      */
+      if (decibel >= 75)
+        digitalWrite(LED_PIN, HIGH);   
+      else 
+        digitalWrite(LED_PIN, LOW);
 
       aOldValue = aValue;
       aValue = -1;
@@ -60,8 +62,9 @@ void loop () {
    * intervallo di durata UPDATE_TIME millisecondi 
    */
   aSensorValue = analogRead(aSensorPin);
-  if (aSensorValue > aValue)
+  if (aSensorValue > aValue) {
     aValue = aSensorValue;
+  }
 
   delay(CHECK_TIME);
 }

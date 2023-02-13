@@ -10,10 +10,13 @@ BUFFER_SIZE = 60*24
 class BoundedBuffer:
     buffer = []
     size = None
-    lock = Condition()
+    update_event = None
 
-    def __init__(self, size):
+    lock = Condition() # prevents race conditions
+
+    def __init__(self, size, buffer_update_event):
         self.size = size if size is not None else BUFFER_SIZE
+        self.update_event = buffer_update_event;
 
     def is_full(self):
         with self.lock:
@@ -32,6 +35,7 @@ class BoundedBuffer:
                 self.buffer = self.buffer[1:] + [(curr_time, value)]
             else:
                 self.buffer.append((curr_time, value))
+            self.update_event.set()
     
     def flush_all(self):
         with self.lock:

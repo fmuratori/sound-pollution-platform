@@ -24,9 +24,8 @@ class ChannelObserver(Thread):
         self.connect()
 
         while True:
-            if self.serial.in_waiting > 0:
-                line = self.serial.readline().decode('utf-8').rstrip()
-                if re.fullmatch(MESSAGE_REGEX, line) is not None:
-                    value = line.split("\t")[0].split(" ")[1]
-                    self.buffer.put(value)
-                    logging.info(f"[SERIAL] New measure received from Arduino. Value: {value}")
+            line = self.serial.readline().decode('utf-8').rstrip()
+            if re.fullmatch(MESSAGE_REGEX, line) is not None:
+                value = line.split("\t")[0].split(" ")[1]
+                self.buffer.put(value)
+                logging.info(f"[SERIAL] New measure received from Arduino. Value: {value}")

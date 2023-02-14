@@ -49,7 +49,7 @@ export default function Device(props) {
   }
   
   function showDevice() {
-    navigate('/device', { state: { deviceName: props.name} });
+    props.onChange();
   }
 
   return (

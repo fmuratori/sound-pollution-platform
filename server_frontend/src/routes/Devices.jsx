@@ -1,14 +1,13 @@
 import { useState, useEffect, useContext } from 'react';
-
 import './Devices.scss';
 import Device from '../components/Device.jsx'
-
 import {SocketContext} from '../socket.js';
-
+import { useNavigate } from "react-router-dom";
 
 function Devices() {
   const socket = useContext(SocketContext);
   const [devices, setDevices] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
 
@@ -28,6 +27,7 @@ function Devices() {
       setDevices(devices)
     });
 
+    socket.emit('stop_watch')
     socket.emit('get_devices')
 
     return () => {
@@ -41,12 +41,21 @@ function Devices() {
   function reloadDevices() {
     socket.emit('get_devices')
   }
+  
+  function openDeviceInfo(deviceName) {
+    socket.emit('start_watch', deviceName);
+    navigate('/device', { state: { deviceName: deviceName} });
+
+  }
 
   function getDevices() {
     return devices
       .map((elem, index) => 
         <div key={index} className='mb-2'>
-          <Device name={elem['device_name']} gpsLat={elem['gps_lat']} gpsLng={elem['gps_lat']} activeSince={elem['active_since']} lastUpdate={elem['last_update']}/>
+          <Device 
+            name={elem['device_name']} gpsLat={elem['gps_lat']} gpsLng={elem['gps_lat']} 
+            activeSince={elem['active_since']} lastUpdate={elem['last_update']}
+            onChange={() => openDeviceInfo(elem['device_name'])}/>
         </div>
       )
   }

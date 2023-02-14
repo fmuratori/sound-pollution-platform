@@ -27,33 +27,33 @@ void loop () {
    * massimo ottenuto e decido se inviarlo oppure no 
    */
   if (currTime - timer > UPDATE_TIME) {
-    if (aValue != aOldValue) {
+    // if (aValue != aOldValue) {
       
-      /*
-       * Dettaglio implementativo poco importante - non è inviata
-       * la prima misurazione registrata
-       */
-      if (aOldValue != 0) {
-        decibel = deltaValueToDecibel(aOldValue, aValue);
-      }
-
-      /* 
-      * Invio dei livelli di rumore in seriale
+    /*
+      * Dettaglio implementativo poco importante - non è inviata
+      * la prima misurazione registrata
       */
-      Serial.print("ANALOG ");
-      Serial.println(decibel);
-
-      /*
-      * Impostazione led di allarme rumore elevato
-      */
-      if (decibel >= 75)
-        digitalWrite(LED_PIN, HIGH);   
-      else 
-        digitalWrite(LED_PIN, LOW);
-
-      aOldValue = aValue;
-      aValue = -1;
+    if (aOldValue != 0) {
+      decibel = deltaValueToDecibel(aOldValue, aValue);
     }
+
+    /* 
+    * Invio dei livelli di rumore in seriale
+    */
+    Serial.print("ANALOG ");
+    Serial.println(decibel);
+
+    /*
+    * Impostazione led di allarme rumore elevato
+    */
+    if (decibel >= 75)
+      digitalWrite(LED_PIN, HIGH);   
+    else 
+      digitalWrite(LED_PIN, LOW);
+
+    aOldValue = aValue;
+    aValue = -1;
+    // }
     timer = currTime;
   }
 

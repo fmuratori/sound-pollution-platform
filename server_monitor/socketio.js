@@ -25,7 +25,7 @@ const setupSocket = (httpServer, metersCollection) => {
     });
 
     socket.on('stop_watch', () => {
-      console.log(`Initializing watcher for socket ${socket.id}`);
+      console.log(`Stopping watcher for socket ${socket.id}`);
 
       stop_watching(socket);
     });
@@ -49,12 +49,12 @@ function start_watching(socket, device_name, metersCollection) {
   var watcher = active_watchers[device_name];
   if (watcher === undefined) {
     // create a new watcher
-    console.log(`Device ${device_name} is not beeing watched currently. Adding new entry to active sockets list`)
-    watcher_behaviour(socket, device_name, metersCollection)
-    active_watchers["device_name"] = {
+    console.log(`Device ${device_name} is not beeing watched currently. Creating a new watcher`)
+    watcher_behaviour(device_name, metersCollection)
+    active_watchers[device_name] = {
       "device_name": device_name,
       "sockets": [socket], 
-      "interval": setInterval(() => watcher_behaviour(socket, device_name, metersCollection), 1000 * 10)
+      "interval": setInterval(() => watcher_behaviour(device_name, metersCollection), 1000 * 10)
     };
   } else {
     // check for duplicated sockets in watcher
@@ -71,17 +71,18 @@ function start_watching(socket, device_name, metersCollection) {
 
 function stop_watching(socket) {
   // find a watcher containing the socket
+  console.log(active_watchers)
   for (const [device_name, watcher] of Object.entries(active_watchers)) {
     var hasSocket = watcher.sockets.filter(elem => elem === socket).length > 0;
     if (hasSocket) {
       console.log(`Socket ${socket.id} was watching the device ${device_name}. Removing the socket from the watcher`)
-      delete watcher.sockets[socket];
+      watcher.sockets.splice(watcher.sockets.indexOf(socket), 1)
 
       // device has no more active watchers
       if (watcher.sockets.length == 0) {
-        console.log(`Device ${device_name} has no remaining watchers. Deleting the device watcher`)
+        console.log(`Device ${device_name} has no remaining watchers. Stopping watcher activity`)
         clearInterval(watcher.interval);
-        delete active_watchers[watcher];
+        delete active_watchers[device_name];
       }
       return;
     } 
@@ -92,38 +93,34 @@ function stop_watching(socket) {
 }
 
 
-function watcher_behaviour(socketio, device_name, metersCollection) {
-  var socket = active_watchers[device_name];
-  if (socket !== null) {
-    // TODO: check per ogni socket in sockets se è attiva, altrimenti rimuovila
-
-    // query meters_collection last N measures
-    metersCollection
-      .findOne({
-        "device_name": device_name,
-      }, {
-        projection: {
-        _id:0, 
-        device_name: 1, 
-        gps_lat: 1, 
-        gps_lng: 1, 
-        active_since:1, 
-        last_update: 1, 
-        data: {
-          $filter: {
-            input: "$data",
-            as: "element",
-            cond: { 
-              $gte: [ "$$element.datetime", new Date(new Date().getTime() - (24 * 60 * 60 * 1000))] 
-            }
+function watcher_behaviour(device_name, metersCollection) {
+  // query meters_collection last N measures
+  metersCollection
+    .findOne({
+      "device_name": device_name,
+    }, {
+      projection: {
+      _id:0, 
+      device_name: 1, 
+      gps_lat: 1, 
+      gps_lng: 1, 
+      active_since:1, 
+      last_update: 1, 
+      data: {
+        $filter: {
+          input: "$data",
+          as: "element",
+          cond: { 
+            $gte: [ "$$element.datetime", new Date(new Date().getTime() - (60 * 60 * 1000))] 
           }
         }
-        }
-    })
-    .then(data => {
-      socketio.emit('device_data', JSON.stringify(data))
+      }
+      }
+  }).then(data => {
+    active_watchers[device_name].sockets.forEach(socket => {
+      socket.emit('device_data', JSON.stringify(data))
     });
-  }
+  }).catch(error => console.log(error));
 }
 
 export default setupSocket;

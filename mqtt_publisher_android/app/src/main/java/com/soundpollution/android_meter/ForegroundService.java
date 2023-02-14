@@ -98,12 +98,12 @@ public class ForegroundService extends Service {
                 if (currTime - oldPublishTime > PUBLISH_TIME) {
                     // check and add new measure to list
                     newDecibel = (int) Math.round(20 * log10(aValue));
-                    if (Math.abs(newDecibel - oldDecibel) > 1) {
-                        System.out.println("[METER] Adding element to buffer. Decibel: " + newDecibel);
-                        Buffer.instance().put(df.format(new Date()) , newDecibel);
-                        oldDecibel = newDecibel;
-                        aValue = -1;
-                    }
+//                    if (Math.abs(newDecibel - oldDecibel) > 1) {
+                    System.out.println("[METER] Adding element to buffer. Decibel: " + newDecibel);
+                    Buffer.instance().put(df.format(new Date()) , newDecibel);
+                    oldDecibel = newDecibel;
+                    aValue = -1;
+//                    }
                     oldPublishTime = currTime;
                 }
 
@@ -111,7 +111,6 @@ public class ForegroundService extends Service {
                 if (aNewValue > aValue) {
                     aValue = aNewValue;
                 }
-
 
                 try {
                     Thread.sleep(CHECK_TIME);

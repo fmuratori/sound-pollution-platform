@@ -1,6 +1,6 @@
 int SENSOR_PIN = A0;
 int CHECK_TIME = 100;
-int UPDATE_TIME = 6000;
+int UPDATE_TIME = 60000;
 
 int loudness = 0;
 int maxLoudness = 0;

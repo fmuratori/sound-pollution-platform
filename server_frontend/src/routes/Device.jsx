@@ -23,8 +23,6 @@ function Device() {
       console.log('disconnected')
     });
 
-    socket.emit('start_watch', location.state.deviceName)
-
     socket.on('device_data', (payload) => {
       const device = JSON
         .parse(payload)
@@ -36,7 +34,6 @@ function Device() {
 
 
     return () => {
-      socket.emit('stop_watch');
       socket.off('connect');
       socket.off('disconnect');
       socket.off('device_data');

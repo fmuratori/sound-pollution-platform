@@ -6,12 +6,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
 
 public class Buffer {
     private static final int BUFFER_SIZE = 60 * 24;
     private static Buffer instance = new Buffer();
-    private Lock lock;
     private List<Pair<String, Integer>> buffer = new ArrayList<>();
 
     public static Buffer instance() {
@@ -24,7 +22,6 @@ public class Buffer {
             buffer.remove(0);
         }
         buffer.add(new Pair<>(date, value));
-        lock.unlock();
     }
 
     public synchronized List<Pair<String, Integer>> get() {

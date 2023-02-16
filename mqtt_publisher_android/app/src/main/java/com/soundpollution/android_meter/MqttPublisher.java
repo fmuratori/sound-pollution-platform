@@ -24,7 +24,7 @@ public class MqttPublisher extends Thread {
 
     public MqttPublisher(Context context) {
         String clientId = MqttClient.generateClientId();
-        mqttClient = new MqttAndroidClient(context, "tcp://192.168.0.100:1883",clientId, Ack.AUTO_ACK);
+        mqttClient = new MqttAndroidClient(context, "tcp://192.168.0.100:1883", "android_meter_001", Ack.AUTO_ACK);
     }
 
     public boolean isConnected() {

@@ -1,7 +1,7 @@
 # Sound Pollution Monitoring IoT Platform
-This is an IoT platform for monitoring and analyzing sound pollution levels in real-time. The platform includes a set of sensors that can be deployed in various locations to collect sound data, which is then processed and analyzed and made accessible to provide insights into noise pollution levels.
+This is an IoT platform for real-time noise monitoring and analysis. The platform includes a set of sensors that can be deployed in different locations to collect sound data, which is then processed, analyzed and made available to provide insight into noise pollution levels.
 
-*This project was intially intended as a Master degree course mandatory project. I decided to independently expand the solution to allow real-time usage of retrieved data and not only back-end related activities*
+*This project was originally realized as a course project in my academic career. I decided to independently extend the solution to allow real-time measurement and use of retrieved data, by creating the entire backend structure.*
 
 ## Features
 - Real-time monitoring of sound pollution levels
